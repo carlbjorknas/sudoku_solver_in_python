@@ -1,3 +1,6 @@
+# Helpers
+#===============
+
 def CreateSudoku():
     return [{1,2,3,4,5,6,7,8,9} for i in range(81)]
 
@@ -5,6 +8,41 @@ def GetRow(rowIndex, sudoku):
     start = rowIndex * 9
     stop = start + 9
     return sudoku[slice(start, stop)]
+
+def GetTheOtherSquaresInSameRow(squareIndex, sudoku):
+    rowIndex = squareIndex // 9
+    colIndex = squareIndex % 9
+    row = GetRow(rowIndex, sudoku)
+    del row[colIndex]
+    return row
+
+def GetTheOtherSquaresInSameCol(squareIndex, sudoku):
+    colIndex = squareIndex % 9
+    rowIndex = squareIndex // 9
+    col = sudoku[slice(colIndex, None, 9)]
+    del col[rowIndex]
+    return col
+
+def GetBigSquareIndex(squareIndex):
+    rowIndex = squareIndex // (9 * 3)
+    colIndex = (squareIndex // 3) % 3
+    return rowIndex * 3 + colIndex
+
+def GetIndicesInBigSquare(bigSquareIndex):
+    row = bigSquareIndex // 3
+    col = bigSquareIndex % 3
+    startIndex = row * 27 + col * 3
+    return {
+        startIndex, startIndex + 1, startIndex + 2,
+        startIndex + 9, startIndex + 10, startIndex + 11,
+        startIndex + 18, startIndex + 19, startIndex + 20
+        }
+
+def GetTheOtherSquaresInTheBigSquare(squareIndex, sudoku):
+    bigSquareIndex = GetBigSquareIndex(squareIndex)
+    indices = GetIndicesInBigSquare(bigSquareIndex)
+    indices.remove(squareIndex)    
+    return [sudoku[i] for i in indices]
 
 # Printing
 #======================
@@ -45,12 +83,25 @@ def PrintSudoku(sudoku):
 
 def TranslateFromUserIndices(biqSquareIndex, smallSquareIndex):
     row = (biqSquareIndex // 3) * 3 + smallSquareIndex // 3
-    col = biqSquareIndex % 3 + smallSquareIndex % 3
+    col = (biqSquareIndex % 3) * 3 + smallSquareIndex % 3
     return row * 9 + col
+
+def KnockOutValueFrom(squares, value):
+    for square in squares:
+        square.discard(value)    
 
 def SetValue(sudoku, bigSquareIndex, smallSquareIndex, value):
     squareIndex = TranslateFromUserIndices(bigSquareIndex, smallSquareIndex)
     sudoku[squareIndex] = {value}
+
+    squaresInRow = GetTheOtherSquaresInSameRow(squareIndex, sudoku)
+    KnockOutValueFrom(squaresInRow, value)
+
+    squaresInColumn = GetTheOtherSquaresInSameCol(squareIndex, sudoku)
+    KnockOutValueFrom(squaresInColumn, value)
+
+    squaresInBigSquare = GetTheOtherSquaresInTheBigSquare(squareIndex, sudoku)
+    KnockOutValueFrom(squaresInBigSquare, value)
     
 # Main
 #==================
