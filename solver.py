@@ -33,7 +33,18 @@ class Board:
         return rowBreak.join(rows)
 
 
-
 board = Board()
 print(board)
+
+while True:
+    userValue = input()
+
+    if userValue == "q":
+        break
+    
+    biqSquareIndex = int(userValue[0])
+    squareIndex = int(userValue[1])
+    value = int(userValue[2])
+
+print("Quitting!")
 
