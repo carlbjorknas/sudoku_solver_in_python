@@ -1,2 +1,0 @@
-class BigSquare:
-    squares = [Square()]
