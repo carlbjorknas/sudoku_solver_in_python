@@ -1,8 +1,13 @@
+class Square:
+    def __init__(self, index):
+        self.possibleValues = {1,2,3,4,5,6,7,8,9}
+        self.index = index
+
 # Helpers
 #===============
 
 def CreateSudoku():
-    return [{1,2,3,4,5,6,7,8,9} for i in range(81)]
+    return [Square(i) for i in range(81)]
 
 def GetRow(rowIndex, sudoku):
     start = rowIndex * 9
@@ -11,17 +16,13 @@ def GetRow(rowIndex, sudoku):
 
 def GetTheOtherSquaresInSameRow(squareIndex, sudoku):
     rowIndex = squareIndex // 9
-    colIndex = squareIndex % 9
     row = GetRow(rowIndex, sudoku)
-    del row[colIndex]
-    return row
+    return  filter(lambda x: x.index != squareIndex, row)
 
 def GetTheOtherSquaresInSameCol(squareIndex, sudoku):
     colIndex = squareIndex % 9
-    rowIndex = squareIndex // 9
     col = sudoku[slice(colIndex, None, 9)]
-    del col[rowIndex]
-    return col
+    return filter(lambda x: x.index != squareIndex, col)
 
 def GetBigSquareIndex(squareIndex):
     rowIndex = squareIndex // (9 * 3)
@@ -55,7 +56,7 @@ def GetSquareString(possibleSquareValues):
     return val.rjust(8)
 
 def GetSudokuBigSquareRowString(bigSquareRow):
-    squareStrings = [GetSquareString(square) for square in bigSquareRow]
+    squareStrings = [GetSquareString(square.possibleValues) for square in bigSquareRow]
     return " ".join(squareStrings)
 
 def GetSudokuRowString(row):
@@ -87,21 +88,38 @@ def TranslateFromUserIndices(biqSquareIndex, smallSquareIndex):
     return row * 9 + col
 
 def KnockOutValueFrom(squares, value):
+    newSingles = []
     for square in squares:
-        square.discard(value)    
+        lenBefore = len(square.possibleValues)
+        square.possibleValues.discard(value)
+        lenAfter = len(square.possibleValues) 
+        if (lenAfter == 0):
+            raise Exception("All values has been knocked out!")
+        if lenAfter == 1 and lenBefore == 2:
+            newSingles.append(square)
+
+    return newSingles            
 
 def SetValue(sudoku, bigSquareIndex, smallSquareIndex, value):
     squareIndex = TranslateFromUserIndices(bigSquareIndex, smallSquareIndex)
-    sudoku[squareIndex] = {value}
+    
+    if len(sudoku[squareIndex].possibleValues) == 1:
+        raise Exception("Resetting a single value!")
 
-    squaresInRow = GetTheOtherSquaresInSameRow(squareIndex, sudoku)
-    KnockOutValueFrom(squaresInRow, value)
+    sudoku[squareIndex].possibleValues = {value}
+    queue = [sudoku[squareIndex]]
 
-    squaresInColumn = GetTheOtherSquaresInSameCol(squareIndex, sudoku)
-    KnockOutValueFrom(squaresInColumn, value)
+    while len(queue) > 0:
+        currentSquare = queue.pop(0)
+        currentValue = next(iter(currentSquare.possibleValues)) # possibleValues is a set and cannot be indexed
+        print(f"Index {currentSquare.index} got the single value {currentValue}. Knocking the value out.")
+        squares = []
+        squares.extend(GetTheOtherSquaresInSameRow(currentSquare.index, sudoku))
+        squares.extend(GetTheOtherSquaresInSameCol(currentSquare.index, sudoku))
+        squares.extend(GetTheOtherSquaresInTheBigSquare(currentSquare.index, sudoku))
 
-    squaresInBigSquare = GetTheOtherSquaresInTheBigSquare(squareIndex, sudoku)
-    KnockOutValueFrom(squaresInBigSquare, value)
+        newSingles = KnockOutValueFrom(squares, currentValue)
+        queue.extend(newSingles)
     
 # Main
 #==================
@@ -115,129 +133,32 @@ while True:
     if userValue == "q":
         break
     
-    biqSquareIndex = int(userValue[0])-1
-    smallSquareIndex = int(userValue[1])-1
-    value = int(userValue[2])
+    queue = []
 
-    SetValue(sudoku, biqSquareIndex, smallSquareIndex, value)
-    PrintSudoku(sudoku)
+    if len(userValue) == 3:
+        queue.append([userValue[0], userValue[1], userValue[2]])
+    
+    if userValue.find(";") > -1:
+        userValues = userValue.split(";")
+        for uv in userValues:
+            queue.append([uv[0], uv[1], uv[2]])
+
+    while (len(queue) > 0):
+        move = queue.pop(0)
+        biqSquareIndex = int(move[0]) - 1
+        smallSquareIndex = int(move[1]) - 1
+        value = int(move[2])
+        SetValue(sudoku, biqSquareIndex, smallSquareIndex, value)
+        PrintSudoku(sudoku)
+
 
     # Förbättringar:
-    # 1.
-    # När bortslagning görs och en liten ruta bara får ett värde kvar,
-    # kör en bortslagning av den med.
-    # 2.
+    # 
     # Kolla igenom varje stor ruta om någon av rutorna är ensam om ett värde.
 
+    # Exempel
+    #
+    # Svårt sudoku Dala-Demokraten 17/11 2018
+    # 115;143;169;194;234;241;286;319;388;416;427;485;498;551;565;613;644;717;733;752;858;866;889;925
+
 print("Quitting!")
-
-
-# class Helper:
-#     def GetOtherIndicesOnSameRowAs(self, index):
-#         indices = self.GetAllIndicesOnSameRowAs(index)
-#         indices.remove(index)
-#         return indices
-
-#     def GetAllIndicesOnSameRowAs(self, index):
-#         rowIndex = index // 3
-#         baseIndex = rowIndex * 3
-#         return {baseIndex, baseIndex+1, baseIndex+2}
-
-#     def GetOtherIndicesInSameColumnAs(self, index):
-#         indices = self.GetAllIndicesInSameColumnAs(index)
-#         indices.remove(index)
-#         return indices
-
-#     def GetAllIndicesInSameColumnAs(self, index):
-#         colIndex = index % 3
-#         return {colIndex, colIndex + 3, colIndex + 6}
-
-# class Square:    
-#     def __init__(self):
-#         self.possibleValues = {1, 2, 3, 4, 5, 6, 7, 8, 9}
-
-#     def SetValue(self, value):
-#         self.possibleValues = {value}
-
-#     def Knockout(self, value):
-#         self.possibleValues.discard(value)
-
-#     def __str__(self):
-#         value = ""
-#         if len(self.possibleValues) == 9:
-#             value = "1-9"
-#         else:
-#             value = "".join([str(i) for i in self.possibleValues])
-        
-#         return value.rjust(8)
-
-# class BigSquare:
-#     def __init__(self):
-#         self.squares = [Square() for i in range(9)]
-
-#     def SetValue(self, index, value):
-#         self.squares[index].SetValue(value)
-#         for square in self._GetAllSquaresBut(index):
-#             square.Knockout(value)
-
-#     def KnockOutOnRow(self, index, value):  
-#         indices = Helper().GetAllIndicesOnSameRowAs(index)
-#         for index in indices:
-#             self.squares[index].Knockout(value)
-
-#     def KnockOutInColumn(self, index, value):
-#         indices = Helper().GetAllIndicesInSameColumnAs(index)
-#         for index in indices:
-#             self.squares[index].Knockout(value)       
-
-#     def _GetAllSquaresBut(self, indexToExclude):
-#         indices = filter(lambda x: x != indexToExclude, range(9))
-#         return [self.squares[i] for i in indices]
-
-#     def GetStringForRow(self, i):
-#         base = i*3
-#         return str(self.squares[base]) + ", " + str(self.squares[base+1]) + ", " + str(self.squares[base+2])
-
-
-# class Board:
-#     def __init__(self):
-#         self.squares = [BigSquare() for i in range(9)]
-
-#     def SetValue(self, bigIndex, smallIndex, value):
-#         self.squares[bigIndex].SetValue(smallIndex, value)
-#         othersOnRow = self._GetOtherSquaresOnRow(bigIndex)
-
-#         for otherOnRow in othersOnRow:
-#             otherOnRow.KnockOutOnRow(smallIndex, value)
-
-#         othersInColumn = self._GetOtherSquaresInColumn(bigIndex)
-#         for otherInColumn in othersInColumn:
-#             otherInColumn.KnockOutInColumn(smallIndex, value)   
-
-#     def _GetOtherSquaresOnRow(self, index):
-#         indices = Helper().GetOtherIndicesOnSameRowAs(index)
-#         return [self.squares[i] for i in indices]
-
-#     def _GetOtherSquaresInColumn(self, index):
-#         indices = Helper().GetOtherIndicesInSameColumnAs(index)
-#         return [self.squares[i] for i in indices]
-
-#     def __str__(self):
-#         horizontalDelimiter = "-" * 94
-#         rows = list()
-#         rows.append(horizontalDelimiter)            
-#         for bigSquareRowIndex in range(3):
-#             bigSquareBaseIndex = bigSquareRowIndex * 3
-#             for rowIndex in range (3):                
-#                 left = self.squares[bigSquareBaseIndex].GetStringForRow(rowIndex)
-#                 middle = self.squares[bigSquareBaseIndex+1].GetStringForRow(rowIndex)
-#                 right = self.squares[bigSquareBaseIndex+2].GetStringForRow(rowIndex)
-#                 rows.append(f"| {left} | {middle} | {right} |")
-#             rows.append(horizontalDelimiter)            
-#         rowBreak = "\n"
-#         return rowBreak.join(rows)
-
-
-# board = Board()
-
-
