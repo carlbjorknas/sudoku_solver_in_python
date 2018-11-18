@@ -1,9 +1,32 @@
+class Helper:
+    def GetOtherIndicesOnSameRowAs(self, index):
+        indices = self.GetAllIndicesOnSameRowAs(index)
+        indices.remove(index)
+        return indices
+
+    def GetAllIndicesOnSameRowAs(self, index):
+        rowIndex = index // 3
+        baseIndex = rowIndex * 3
+        return {baseIndex, baseIndex+1, baseIndex+2}
+
+    def GetOtherIndicesInSameColumnAs(self, index):
+        indices = self.GetAllIndicesInSameColumnAs(index)
+        indices.remove(index)
+        return indices
+
+    def GetAllIndicesInSameColumnAs(self, index):
+        colIndex = index % 3
+        return {colIndex, colIndex + 3, colIndex + 6}
+
 class Square:    
     def __init__(self):
         self.possibleValues = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
     def SetValue(self, value):
         self.possibleValues = {value}
+
+    def Knockout(self, value):
+        self.possibleValues.discard(value)
 
     def __str__(self):
         value = ""
@@ -20,6 +43,22 @@ class BigSquare:
 
     def SetValue(self, index, value):
         self.squares[index].SetValue(value)
+        for square in self._GetAllSquaresBut(index):
+            square.Knockout(value)
+
+    def KnockOutOnRow(self, index, value):  
+        indices = Helper().GetAllIndicesOnSameRowAs(index)
+        for index in indices:
+            self.squares[index].Knockout(value)
+
+    def KnockOutInColumn(self, index, value):
+        indices = Helper().GetAllIndicesInSameColumnAs(index)
+        for index in indices:
+            self.squares[index].Knockout(value)       
+
+    def _GetAllSquaresBut(self, indexToExclude):
+        indices = filter(lambda x: x != indexToExclude, range(9))
+        return [self.squares[i] for i in indices]
 
     def GetStringForRow(self, i):
         base = i*3
@@ -32,6 +71,22 @@ class Board:
 
     def SetValue(self, bigIndex, smallIndex, value):
         self.squares[bigIndex].SetValue(smallIndex, value)
+        othersOnRow = self._GetOtherSquaresOnRow(bigIndex)
+
+        for otherOnRow in othersOnRow:
+            otherOnRow.KnockOutOnRow(smallIndex, value)
+
+        othersInColumn = self._GetOtherSquaresInColumn(bigIndex)
+        for otherInColumn in othersInColumn:
+            otherInColumn.KnockOutInColumn(smallIndex, value)   
+
+    def _GetOtherSquaresOnRow(self, index):
+        indices = Helper().GetOtherIndicesOnSameRowAs(index)
+        return [self.squares[i] for i in indices]
+
+    def _GetOtherSquaresInColumn(self, index):
+        indices = Helper().GetOtherIndicesInSameColumnAs(index)
+        return [self.squares[i] for i in indices]
 
     def __str__(self):
         horizontalDelimiter = "-" * 94
@@ -64,6 +119,13 @@ while True:
 
     board.SetValue(biqSquareIndex-1, squareIndex-1, value)
     print(board)
+
+    # Förbättringar:
+    # 1.
+    # När bortslagning görs och en liten ruta bara får ett värde kvar,
+    # kör en bortslagning av den med.
+    # 2.
+    # Kolla igenom varje stor ruta om någon av rutorna är ensam om ett värde.
 
 print("Quitting!")
 
