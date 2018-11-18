@@ -22,13 +22,15 @@ class Board:
 
     def __str__(self):
         rows = list()
-        for bigSquareRowIndex in range(2):
+        rows.append("-------------------------------------------------")            
+        for bigSquareRowIndex in range(3):
             bigSquareBaseIndex = bigSquareRowIndex * 3
-            for rowIndex in range (2):                
+            for rowIndex in range (3):                
                 left = self.squares[bigSquareBaseIndex].GetStringForRow(rowIndex)
                 middle = self.squares[bigSquareBaseIndex+1].GetStringForRow(rowIndex)
                 right = self.squares[bigSquareBaseIndex+2].GetStringForRow(rowIndex)
                 rows.append(f"| {left} | {middle} | {right} |")
+            rows.append("-------------------------------------------------")            
         rowBreak = "\n"
         return rowBreak.join(rows)
 
