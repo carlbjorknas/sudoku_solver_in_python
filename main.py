@@ -1,8 +1,10 @@
 import models, printing, solver
 
-def TranslateFromUserIndices(biqSquareIndex, smallSquareIndex):
-    row = (biqSquareIndex // 3) * 3 + smallSquareIndex // 3
-    col = (biqSquareIndex % 3) * 3 + smallSquareIndex % 3
+def TranslateFromUserIndices(bigSquareIndex, smallSquareIndex):
+    bsIndex = int(bigSquareIndex) - 1
+    ssIndex = int(smallSquareIndex) - 1
+    row = (bsIndex // 3) * 3 + ssIndex // 3
+    col = (bsIndex % 3) * 3 + ssIndex % 3
     return row * 9 + col
 
 sudoku = models.Sudoku()
@@ -14,25 +16,21 @@ while True:
     if userValue == "q":
         break
     
-    queue = []
+    if userValue == "s":
+        solved = solver.Solve(sudoku)
+        print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
+        if solved:
+            break
+    else:    
+        # Assume there is a single command or a list of commands separated by ";"
+        valuesToSet = [[uv[0], uv[1], uv[2]] for uv in userValue.split(";")]
 
-    if len(userValue) == 3:
-        queue.append([userValue[0], userValue[1], userValue[2]])
-    
-    if userValue.find(";") > -1:
-        userValues = userValue.split(";")
-        for uv in userValues:
-            queue.append([uv[0], uv[1], uv[2]])
-
-    while (len(queue) > 0):
-        move = queue.pop(0)
-        biqSquareIndex = int(move[0]) - 1
-        smallSquareIndex = int(move[1]) - 1
-        value = int(move[2])
-        squareIndex = TranslateFromUserIndices(biqSquareIndex, smallSquareIndex)
-        solver.Solve(sudoku, squareIndex, value)
-        printing.PrintSudoku(sudoku)
-
+        for valueToSet in valuesToSet:
+            (biqSquareIndex, smallSquareIndex, value) = valueToSet
+            squareIndex = TranslateFromUserIndices(biqSquareIndex, smallSquareIndex)
+            square = sudoku.GetSquare(squareIndex)
+            square.Set(int(value))
+        printing.PrintSudoku(sudoku)            
 
     # Improvements:
     # 

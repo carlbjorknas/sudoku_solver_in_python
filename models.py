@@ -4,7 +4,7 @@ class Square:
         self.index = index
 
     def Set(self, value):
-        if self.IsSolved() and self.Value != value:
+        if self.IsSolved() and self.Value() != value:
             raise Exception("Changing a solved square's value to another value!")
         self.possibleValues = {value}
 
@@ -24,8 +24,14 @@ class Sudoku:
     def __init__(self):
         self.squares = [Square(i) for i in range(81)]
 
+    def IsSolved(self):
+        return all((square.IsSolved() for square in self.squares))
+
     def GetSquare(self, squareIndex):
         return self.squares[squareIndex]
+
+    def GetSolvedSquares(self):
+        return [square for square in self.squares if square.IsSolved()]        
 
     def GetRow(self, rowIndex):
         start = rowIndex * 9

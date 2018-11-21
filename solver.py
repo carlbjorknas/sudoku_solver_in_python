@@ -1,3 +1,5 @@
+import printing
+
 def KnockOutValueFrom(squares, value):
     newSingles = []
     for square in squares:
@@ -9,18 +11,15 @@ def KnockOutValueFrom(squares, value):
 
     return newSingles   
 
-def KnockoutValuesFromSquaresAffectedBy(square, sudoku):
-    squareQueue = [square]
-    while len(squareQueue) > 0:
-        currentSquare = squareQueue.pop(0)        
-        print(f"Index {currentSquare.index} got the single value {currentSquare.Value()}. Knocking the value out.")
-        squares = []
-        squares.extend(sudoku.GetTheOtherSquaresInSameRow(currentSquare.index))
-        squares.extend(sudoku.GetTheOtherSquaresInSameCol(currentSquare.index))
-        squares.extend(sudoku.GetTheOtherSquaresInTheBigSquare(currentSquare.index))
+def KnockoutValuesFromSquaresAffectedBy(square, sudoku):      
+    print(f"Index {square.index} got the single value {square.Value()}. Knocking the value out.")
+    squares = []
+    squares.extend(sudoku.GetTheOtherSquaresInSameRow(square.index))
+    squares.extend(sudoku.GetTheOtherSquaresInSameCol(square.index))
+    squares.extend(sudoku.GetTheOtherSquaresInTheBigSquare(square.index))
 
-        newSingles = KnockOutValueFrom(squares, currentSquare.Value())
-        squareQueue.extend(newSingles)
+    newSingles = KnockOutValueFrom(squares, square.Value())
+    return newSingles
     
 def FindSquareHavingUniqueValue(sudoku):    
     possibleValues = {1,2,3,4,5,6,7,8,9}
@@ -34,13 +33,24 @@ def FindSquareHavingUniqueValue(sudoku):
             squaresHavingTheUnsetValue = list(filter(lambda x: unsetValue in x.possibleValues, squaresWithMultipleValues))
             if len(squaresHavingTheUnsetValue) == 1:
                 foundSquare = squaresHavingTheUnsetValue[0]
-                print(f"Square with index {foundSquare.index} has a unique value in its big square.")
+                print(f"Square with index {foundSquare.index} has a unique value {unsetValue} in its big square.")
                 return (foundSquare, unsetValue)
     return (None, None)
 
-def Solve(sudoku, squareIndex, value):    
-    square = sudoku.GetSquare(squareIndex)
-    while square is not None:
-        square.Set(value)
-        KnockoutValuesFromSquaresAffectedBy(square, sudoku)    
-        (square, value) = FindSquareHavingUniqueValue(sudoku)
+def Solve(sudoku):
+    solvedSquaresQueue = sudoku.GetSolvedSquares()  
+    while len(solvedSquaresQueue) > 0:
+        square = solvedSquaresQueue.pop(0)
+        squaresSolvedByKnockout = KnockoutValuesFromSquaresAffectedBy(square, sudoku)
+        solvedSquaresQueue.extend(squaresSolvedByKnockout)
+        printing.PrintSudoku(sudoku)
+        if len(solvedSquaresQueue) == 0:
+            if sudoku.IsSolved():
+                return True
+            (square, value) = FindSquareHavingUniqueValue(sudoku)
+            if square is not None:
+                square.Set(value)
+                solvedSquaresQueue = [square]
+                continue
+
+    return False
