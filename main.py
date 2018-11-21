@@ -17,7 +17,7 @@ while True:
         break
     
     if userValue == "s":
-        solved = solver.Solve(sudoku)
+        solved = solver.Solver(sudoku).Solve()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break
@@ -33,8 +33,6 @@ while True:
         printing.PrintSudoku(sudoku)            
 
     # Improvements:
-    # 
-    # Kolla igenom varje stor ruta, rad och kolumn om någon av rutorna är ensam om ett värde.
     #
     # When no more certain knockouts can be done, start trying different values out
 
