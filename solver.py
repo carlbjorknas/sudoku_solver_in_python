@@ -3,6 +3,23 @@ class Square:
         self.possibleValues = {1,2,3,4,5,6,7,8,9}
         self.index = index
 
+    def Set(self, value):
+        if self.IsSolved() and self.Value != value:
+            raise Exception("Changing a solved square's value to another value!")
+        self.possibleValues = {value}
+
+    def Remove(self, value):
+        self.possibleValues.discard(value)
+
+    def Value(self):
+        if not self.IsSolved():
+            raise Exception("Cannot get the value if the square isn't solved.")
+        # possibleValues is a set and cannot be indexed
+        return next(iter(self.possibleValues))
+    
+    def IsSolved(self):
+        return len(self.possibleValues) == 1
+
 # Helpers
 #===============
 
@@ -39,11 +56,14 @@ def GetIndicesInBigSquare(bigSquareIndex):
         startIndex + 18, startIndex + 19, startIndex + 20
         }
 
+def GetSquaresInBigSquare(bigSquareIndex, sudoku):
+    indices = GetIndicesInBigSquare(bigSquareIndex)
+    return [sudoku[i] for i in indices]
+
 def GetTheOtherSquaresInTheBigSquare(squareIndex, sudoku):
     bigSquareIndex = GetBigSquareIndex(squareIndex)
-    indices = GetIndicesInBigSquare(bigSquareIndex)
-    indices.remove(squareIndex)    
-    return [sudoku[i] for i in indices]
+    squares = GetSquaresInBigSquare(bigSquareIndex, sudoku)
+    return filter(lambda x: x.index != squareIndex, squares)
 
 # Printing
 #======================
@@ -87,40 +107,57 @@ def TranslateFromUserIndices(biqSquareIndex, smallSquareIndex):
     col = (biqSquareIndex % 3) * 3 + smallSquareIndex % 3
     return row * 9 + col
 
+def GetSquare(sudoku, bigSquareIndex, smallSquareIndex):
+    squareIndex = TranslateFromUserIndices(bigSquareIndex, smallSquareIndex)
+    return sudoku[squareIndex]
+
 def KnockOutValueFrom(squares, value):
     newSingles = []
     for square in squares:
-        lenBefore = len(square.possibleValues)
-        square.possibleValues.discard(value)
-        lenAfter = len(square.possibleValues) 
-        if (lenAfter == 0):
-            raise Exception("All values has been knocked out!")
-        if lenAfter == 1 and lenBefore == 2:
+        if square.IsSolved():
+            continue
+        square.Remove(value)
+        if square.IsSolved():
             newSingles.append(square)
 
-    return newSingles            
+    return newSingles   
 
-def SetValue(sudoku, bigSquareIndex, smallSquareIndex, value):
-    squareIndex = TranslateFromUserIndices(bigSquareIndex, smallSquareIndex)
-    
-    if len(sudoku[squareIndex].possibleValues) == 1:
-        raise Exception("Resetting a single value!")
-
-    sudoku[squareIndex].possibleValues = {value}
-    queue = [sudoku[squareIndex]]
-
-    while len(queue) > 0:
-        currentSquare = queue.pop(0)
-        currentValue = next(iter(currentSquare.possibleValues)) # possibleValues is a set and cannot be indexed
-        print(f"Index {currentSquare.index} got the single value {currentValue}. Knocking the value out.")
+def KnockoutValuesFromSquaresAffectedBy(square):
+    squareQueue = [square]
+    while len(squareQueue) > 0:
+        currentSquare = squareQueue.pop(0)        
+        print(f"Index {currentSquare.index} got the single value {currentSquare.Value()}. Knocking the value out.")
         squares = []
         squares.extend(GetTheOtherSquaresInSameRow(currentSquare.index, sudoku))
         squares.extend(GetTheOtherSquaresInSameCol(currentSquare.index, sudoku))
         squares.extend(GetTheOtherSquaresInTheBigSquare(currentSquare.index, sudoku))
 
-        newSingles = KnockOutValueFrom(squares, currentValue)
-        queue.extend(newSingles)
+        newSingles = KnockOutValueFrom(squares, currentSquare.Value())
+        squareQueue.extend(newSingles)
     
+def FindSquareHavingUniqueValue(sudoku):    
+    possibleValues = {1,2,3,4,5,6,7,8,9}
+    for bigSquareIndex in range(9):
+        squares = GetSquaresInBigSquare(bigSquareIndex, sudoku)
+        squaresWithSingleValue = filter(lambda x: len(x.possibleValues) == 1, squares)
+        setValues = map(lambda square: square.Value, squaresWithSingleValue)
+        unsetValues = possibleValues.difference(setValues)
+        squaresWithMultipleValues = list(filter(lambda x: len(x.possibleValues) > 1, squares))
+        for unsetValue in unsetValues:
+            squaresHavingTheUnsetValue = list(filter(lambda x: unsetValue in x.possibleValues, squaresWithMultipleValues))
+            if len(squaresHavingTheUnsetValue) == 1:
+                foundSquare = squaresHavingTheUnsetValue[0]
+                print(f"Square with index {foundSquare.index} has a unique value in its big square.")
+                return (foundSquare, unsetValue)
+    return (None, None)
+
+def Solve(sudoku, bigSquareIndex, smallSquareIndex, value):
+    square = GetSquare(sudoku, biqSquareIndex, smallSquareIndex)
+    while square is not None:
+        square.Set(value)
+        KnockoutValuesFromSquaresAffectedBy(square)    
+        (square, value) = FindSquareHavingUniqueValue(sudoku)
+
 # Main
 #==================
 
@@ -148,17 +185,22 @@ while True:
         biqSquareIndex = int(move[0]) - 1
         smallSquareIndex = int(move[1]) - 1
         value = int(move[2])
-        SetValue(sudoku, biqSquareIndex, smallSquareIndex, value)
+        Solve(sudoku, biqSquareIndex, smallSquareIndex, value)
         PrintSudoku(sudoku)
 
 
-    # Förbättringar:
+    # Improvements:
     # 
     # Kolla igenom varje stor ruta om någon av rutorna är ensam om ett värde.
-
-    # Exempel
     #
-    # Svårt sudoku Dala-Demokraten 17/11 2018
+    # When no more certain knockouts can be done, start trying different values out
+
+    # Examples:
+    #
+    # Difficult sudoku in Dala-Demokraten 17/11 2018
     # 115;143;169;194;234;241;286;319;388;416;427;485;498;551;565;613;644;717;733;752;858;866;889;925
+    #
+    # Easy Dala-Demokraten 20/11 2018
+    # 133;164;195;251;279;284;315;334;442;453;484;491;514;541;555;586;625;647;673;688;692;719;773;781;818;827;863;889;894;969;972;997
 
 print("Quitting!")
