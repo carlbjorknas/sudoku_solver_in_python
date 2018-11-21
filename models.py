@@ -43,9 +43,12 @@ class Sudoku:
         row = self.GetRow(rowIndex)
         return  filter(lambda x: x.index != squareIndex, row)
 
+    def GetColumn(self, colIndex):
+        return self.squares[slice(colIndex, None, 9)]
+
     def GetTheOtherSquaresInSameCol(self, squareIndex):
         colIndex = squareIndex % 9
-        col = self.squares[slice(colIndex, None, 9)]
+        col = self.GetColumn(colIndex)
         return filter(lambda x: x.index != squareIndex, col)
 
     @staticmethod

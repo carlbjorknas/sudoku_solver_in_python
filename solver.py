@@ -20,20 +20,35 @@ def KnockoutValuesFromSquaresAffectedBy(square, sudoku):
 
     newSingles = KnockOutValueFrom(squares, square.Value())
     return newSingles
-    
-def FindSquareHavingUniqueValue(sudoku):    
+
+def _FindSquareHavingUniqueValue(squareSelector):
     possibleValues = {1,2,3,4,5,6,7,8,9}
-    for bigSquareIndex in range(9):
-        squares = sudoku.GetSquaresInBigSquare(bigSquareIndex)
+    for index in range(9):
+        squares = squareSelector(index)
         solvedValues = [square.Value() for square in squares if square.IsSolved()]
         unsolvedValues = possibleValues.difference(solvedValues)
         for unsolvedValue in unsolvedValues:
             squaresHavingTheUnsolvedValue = [square for square in squares if unsolvedValue in square.possibleValues]
             if len(squaresHavingTheUnsolvedValue) == 1:
-                foundSquare = squaresHavingTheUnsolvedValue[0]
-                print(f"Square with index {foundSquare.index} has a unique value {unsolvedValue} in its big square.")
+                foundSquare = squaresHavingTheUnsolvedValue[0]                
                 return (foundSquare, unsolvedValue)
-    return (None, None)
+    return None
+
+def FindSquareHavingUniqueValue(sudoku): 
+    squareSelectors = [
+        ("big square", lambda bigSquareIndex: sudoku.GetSquaresInBigSquare(bigSquareIndex)),
+        ("row", lambda rowIndex: sudoku.GetRow(rowIndex)),
+        ("column", lambda colIndex: sudoku.GetColumn(colIndex))
+    ]
+    for (description, squareSeletor) in squareSelectors:  
+        result = _FindSquareHavingUniqueValue(squareSeletor)
+        if result is None:
+            continue
+        (square, value) = result
+        print(f"Square with index {square.index} has a unique value {value} in its {description}.")
+        return result
+
+    return None
 
 def Solve(sudoku):
     solvedSquaresQueue = sudoku.GetSolvedSquares()  
@@ -45,8 +60,9 @@ def Solve(sudoku):
         if len(solvedSquaresQueue) == 0:
             if sudoku.IsSolved():
                 return True
-            (square, value) = FindSquareHavingUniqueValue(sudoku)
-            if square is not None:
+            result = FindSquareHavingUniqueValue(sudoku)
+            if result is not None:
+                (square, value) = result
                 square.Set(value)
                 solvedSquaresQueue = [square]
                 continue
