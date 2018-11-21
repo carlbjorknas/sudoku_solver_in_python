@@ -25,16 +25,14 @@ def FindSquareHavingUniqueValue(sudoku):
     possibleValues = {1,2,3,4,5,6,7,8,9}
     for bigSquareIndex in range(9):
         squares = sudoku.GetSquaresInBigSquare(bigSquareIndex)
-        squaresWithSingleValue = filter(lambda x: len(x.possibleValues) == 1, squares)
-        setValues = map(lambda square: square.Value, squaresWithSingleValue)
-        unsetValues = possibleValues.difference(setValues)
-        squaresWithMultipleValues = list(filter(lambda x: len(x.possibleValues) > 1, squares))
-        for unsetValue in unsetValues:
-            squaresHavingTheUnsetValue = list(filter(lambda x: unsetValue in x.possibleValues, squaresWithMultipleValues))
-            if len(squaresHavingTheUnsetValue) == 1:
-                foundSquare = squaresHavingTheUnsetValue[0]
-                print(f"Square with index {foundSquare.index} has a unique value {unsetValue} in its big square.")
-                return (foundSquare, unsetValue)
+        solvedValues = [square.Value() for square in squares if square.IsSolved()]
+        unsolvedValues = possibleValues.difference(solvedValues)
+        for unsolvedValue in unsolvedValues:
+            squaresHavingTheUnsolvedValue = [square for square in squares if unsolvedValue in square.possibleValues]
+            if len(squaresHavingTheUnsolvedValue) == 1:
+                foundSquare = squaresHavingTheUnsolvedValue[0]
+                print(f"Square with index {foundSquare.index} has a unique value {unsolvedValue} in its big square.")
+                return (foundSquare, unsolvedValue)
     return (None, None)
 
 def Solve(sudoku):
