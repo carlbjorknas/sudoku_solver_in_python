@@ -27,34 +27,15 @@ class Solver:
         newSingles = self._KnockOutValueFrom(squares, square.Value())
         return newSingles
 
-    @staticmethod
-    def _FindSquareHavingUniqueValueUsing(squareSelector):
-        possibleValues = {1,2,3,4,5,6,7,8,9}
-        for index in range(9):
-            squares = squareSelector(index)
-            solvedValues = [square.Value() for square in squares if square.IsSolved()]
-            unsolvedValues = possibleValues.difference(solvedValues)
-            for unsolvedValue in unsolvedValues:
-                squaresHavingTheUnsolvedValue = [square for square in squares if unsolvedValue in square.possibleValues]
-                if len(squaresHavingTheUnsolvedValue) == 1:
-                    foundSquare = squaresHavingTheUnsolvedValue[0]                
-                    return (foundSquare, unsolvedValue)
-        return None
-
     def _FindSquareHavingUniqueValue(self): 
-        squareSelectors = [
-            ("big square", lambda bigSquareIndex: self.sudoku.GetSquaresInBigSquare(bigSquareIndex)),
-            ("row", lambda rowIndex: self.sudoku.GetRow(rowIndex)),
-            ("column", lambda colIndex: self.sudoku.GetColumn(colIndex))
-        ]
-        for (description, squareSeletor) in squareSelectors:  
-            result = self._FindSquareHavingUniqueValueUsing(squareSeletor)
-            if result is None:
-                continue
-            (square, value) = result
-            print(f"Square with has a unique value {value} in its {description}. {str(square)}")
-            return result
-
+        for biqSquareIndex in range(9):
+            squares = self.sudoku.GetSquaresInBigSquare(biqSquareIndex)
+            for value in {1,2,3,4,5,6,7,8,9}:
+                usolvedSquaresHavingTheValue = [square for square in squares if not square.IsSolved() and value in square.possibleValues]
+                if len(usolvedSquaresHavingTheValue) == 1:
+                    foundSquare = usolvedSquaresHavingTheValue[0]                
+                    print(f"Square with has a unique value {value} in its big square. {str(foundSquare)}")
+                    return (foundSquare, value)
         return None
 
     def Solve(self):
