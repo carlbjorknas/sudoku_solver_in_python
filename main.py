@@ -38,10 +38,16 @@ while True:
 
     # Examples:
     #
-    # Difficult sudoku in Dala-Demokraten 17/11 2018
+    # Difficult sudoku in Dala-Demokraten 17/11 2018 
+    # Solved using knockout and unique value finder
     # 115;143;169;194;234;241;286;319;388;416;427;485;498;551;565;613;644;717;733;752;858;866;889;925
     #
-    # Easy Dala-Demokraten 20/11 2018
+    # Medium Dala-Demokraten 23/11 2018 
+    # Not solved
+    # 123;157;188;218;221;245;274;286;314;361;382;399;446;478;495;541;565;589;722;749;825;842;854;866;891;934;941;989
+    #
+    # Easy Dala-Demokraten 20/11 2018 
+    # Solved using knockout only
     # 133;164;195;251;279;284;315;334;442;453;484;491;514;541;555;586;625;647;673;688;692;719;773;781;818;827;863;889;894;969;972;997
 
 print("Quitting!")
