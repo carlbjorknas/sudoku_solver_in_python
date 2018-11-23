@@ -18,11 +18,11 @@ class Solver:
         return newSingles   
 
     def _KnockoutValuesFromSquaresAffectedBy(self, square):      
-        print(f"Index {square.index} got the single value {square.Value()}. Knocking the value out.")
+        print(f"Square has been solved. Knocking the value out from affected squares. {str(square)}")
         squares = []
         squares.extend(self.sudoku.GetTheOtherSquaresInSameRow(square.index))
         squares.extend(self.sudoku.GetTheOtherSquaresInSameCol(square.index))
-        squares.extend(self.sudoku.GetTheOtherSquaresInTheBigSquare(square.index))
+        squares.extend(self.sudoku.GetTheOtherSquaresInTheBigSquare(square))
 
         newSingles = self._KnockOutValueFrom(squares, square.Value())
         return newSingles
@@ -52,7 +52,7 @@ class Solver:
             if result is None:
                 continue
             (square, value) = result
-            print(f"Square with index {square.index} has a unique value {value} in its {description}.")
+            print(f"Square with has a unique value {value} in its {description}. {str(square)}")
             return result
 
         return None

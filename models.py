@@ -20,6 +20,23 @@ class Square:
     def IsSolved(self):
         return len(self.possibleValues) == 1
 
+    def __str__(self):
+        bigSquareUserIndex = self.GetBigSquareIndex() + 1
+        smallSquareUserIndex = self._GetSmallSquareIndex() + 1
+        valueString = ','.join([str(value) for value in self.possibleValues])
+        return f"Index:{bigSquareUserIndex},{smallSquareUserIndex} Value(s):{valueString}"
+
+    def GetBigSquareIndex(self):        
+        rowIndex = self.index // (9 * 3)
+        colIndex = (self.index // 3) % 3
+        return rowIndex * 3 + colIndex
+
+    def _GetSmallSquareIndex(self):
+        row = (self.index % 27) // 9
+        col = self.index % 3
+        return row * 3 + col
+
+
 class Sudoku:
     def __init__(self):
         self.squares = [Square(i) for i in range(81)]
@@ -52,12 +69,6 @@ class Sudoku:
         return filter(lambda x: x.index != squareIndex, col)
 
     @staticmethod
-    def _GetBigSquareIndex(squareIndex):        
-        rowIndex = squareIndex // (9 * 3)
-        colIndex = (squareIndex // 3) % 3
-        return rowIndex * 3 + colIndex
-
-    @staticmethod
     def _GetIndicesInBigSquare(bigSquareIndex):
         row = bigSquareIndex // 3
         col = bigSquareIndex % 3
@@ -72,7 +83,7 @@ class Sudoku:
         indices = self._GetIndicesInBigSquare(bigSquareIndex)
         return [self.squares[i] for i in indices]
 
-    def GetTheOtherSquaresInTheBigSquare(self, squareIndex):
-        bigSquareIndex = self._GetBigSquareIndex(squareIndex)
+    def GetTheOtherSquaresInTheBigSquare(self, square):
+        bigSquareIndex = square.GetBigSquareIndex()
         squares = self.GetSquaresInBigSquare(bigSquareIndex)
-        return filter(lambda x: x.index != squareIndex, squares)
+        return filter(lambda x: x.index != square.index, squares)
