@@ -1,3 +1,11 @@
+import datetime
+from time import strftime
+
+# class Logger:
+#     def _init__(self):
+#         filename = strftime("%Y%m%d %H-%M-%S", datetime.datetime.now()) + ".log"
+#         self.file = open("")
+
 def GetSquareString(possibleSquareValues):
     if len(possibleSquareValues) == 9:
         val = "1-9" 

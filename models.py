@@ -10,6 +10,8 @@ class Square:
 
     def Remove(self, value):
         self.possibleValues.discard(value)
+        if len(self.possibleValues) == 0:
+            raise Exception("Knocked out every value!")
 
     def Value(self):
         if not self.IsSolved():

@@ -8,6 +8,7 @@ def TranslateFromUserIndices(bigSquareIndex, smallSquareIndex):
     return row * 9 + col
 
 sudoku = models.Sudoku()
+solver = solver.Solver(sudoku)
 printing.PrintSudoku(sudoku)
 
 while True:
@@ -17,17 +18,17 @@ while True:
         break
     
     if userValue == "k":
-        solved = solver.Solver(sudoku).SolveUsingKnockout()
+        solved = solver.SolveUsingKnockout()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break
     elif userValue == "u":
-        solved = solver.Solver(sudoku).SolveByFindingUniqueValues()
+        solved = solver.SolveByFindingUniqueValues()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break 
     elif userValue == "b":
-        solved = solver.Solver(sudoku).SolveUsingBruteForce()
+        solved = solver.SolveUsingBruteForce()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break               
@@ -46,8 +47,8 @@ while True:
 
     # Improvements:
     #
-    # When no more certain knockouts can be done, start trying different values out
     # Write to log file
+    # Maintain possibleValues sort order when cloning the sudoku.
 
     # Examples:
     #
@@ -56,7 +57,7 @@ while True:
     # 115;143;169;194;234;241;286;319;388;416;427;485;498;551;565;613;644;717;733;752;858;866;889;925
     #
     # Medium Dala-Demokraten 23/11 2018 
-    # Not solved
+    # Solved using knockout, unique value finder and brute force
     # 123;157;188;218;221;245;274;286;314;361;382;399;446;478;495;541;565;589;722;749;825;842;854;866;891;934;941;989
     #
     # Easy Dala-Demokraten 20/11 2018 

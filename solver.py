@@ -2,17 +2,18 @@ import printing
 
 class Solver:
 
-    def __init__(self, sudoku):
+    def __init__(self, sudoku, level = 1, numberGuesses = 0):
         self.sudoku = sudoku
+        self.level = level
+        self.numberGuesses = numberGuesses
 
     @staticmethod
     def _KnockOutValueFrom(squares, value):
         newSingles = []
         for square in squares:
-            if square.IsSolved():
-                continue
+            solvedBefore = square.IsSolved()
             square.Remove(value)
-            if square.IsSolved():
+            if square.IsSolved() and not solvedBefore:
                 newSingles.append(square)
 
         return newSingles   
@@ -56,8 +57,8 @@ class Solver:
 
     def SolveUsingBruteForce(self):
         square = self._FindSquareToBruteForce()
-        return any([self._BruteForceSolve(square, value) for value in square.possibleValues])
-
+        return any((self._BruteForceSolve(square, value) for value in square.possibleValues))
+            
     def _FindSquareToBruteForce(self):
         bestSquare = None
         for square in self.sudoku.squares:
@@ -68,11 +69,12 @@ class Solver:
         return bestSquare
 
     def _BruteForceSolve(self, square, value):
-        print(f"Bruteforcing with value {value}. {str(square)}")
+        self.numberGuesses += 1
+        print(f"Bruteforcing with value {value}, level {self.level}, number guesses {self.numberGuesses}. {str(square)}")
         newSudoku = self.sudoku.Clone()
         newSquare = newSudoku.GetSquare(square.index)
         newSquare.Set(value)
-        solver = Solver(newSudoku)
+        solver = Solver(newSudoku, self.level+1, self.numberGuesses)
         try:
             return solver._SolveUsingKnockout([newSquare]) or solver.SolveByFindingUniqueValues() or solver.SolveUsingBruteForce()
         except:
