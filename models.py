@@ -40,6 +40,15 @@ class Square:
 class Sudoku:
     def __init__(self):
         self.squares = [Square(i) for i in range(81)]
+    
+    def Clone(self):
+        newSudoku = Sudoku()
+        newSudoku.squares = []
+        for square in self.squares:
+            newSquare = Square(square.index)
+            newSquare.possibleValues = set(square.possibleValues)
+            newSudoku.squares.append(newSquare)
+        return newSudoku
 
     def IsSolved(self):
         return all((square.IsSolved() for square in self.squares))

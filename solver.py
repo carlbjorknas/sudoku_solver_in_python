@@ -38,21 +38,56 @@ class Solver:
                     return (foundSquare, value)
         return None
 
-    def Solve(self):
-        solvedSquaresQueue = self.sudoku.GetSolvedSquares()  
-        while len(solvedSquaresQueue) > 0:
+    def SolveUsingKnockout(self):
+        solvedSquaresQueue = self.sudoku.GetSolvedSquares() 
+        return self._SolveUsingKnockout(solvedSquaresQueue)
+
+    def SolveByFindingUniqueValues(self):
+        while True:
+            result = self._FindSquareHavingUniqueValue()
+            if result is None:
+                return False
+            (square, value) = result
+            square.Set(value)
+            solved = self._SolveUsingKnockout([square])
+            if solved:
+                return True
+        return False  
+
+    def SolveUsingBruteForce(self):
+        square = self._FindSquareToBruteForce()
+        return any([self._BruteForceSolve(square, value) for value in square.possibleValues])
+
+    def _FindSquareToBruteForce(self):
+        bestSquare = None
+        for square in self.sudoku.squares:
+            if square.IsSolved():
+                continue
+            if bestSquare is None or len(square.possibleValues) < len(bestSquare.possibleValues):
+                bestSquare = square
+        return bestSquare
+
+    def _BruteForceSolve(self, square, value):
+        print(f"Bruteforcing with value {value}. {str(square)}")
+        newSudoku = self.sudoku.Clone()
+        newSquare = newSudoku.GetSquare(square.index)
+        newSquare.Set(value)
+        solver = Solver(newSudoku)
+        try:
+            return solver._SolveUsingKnockout([newSquare]) or solver.SolveByFindingUniqueValues() or solver.SolveUsingBruteForce()
+        except:
+            print(f"Failed bruteforcing with value {value}. {str(square)}")
+            return False
+
+    def _SolveUsingKnockout(self, solvedSquaresQueue):         
+        while len(solvedSquaresQueue) > 0:            
             square = solvedSquaresQueue.pop(0)
             squaresSolvedByKnockout = self._KnockoutValuesFromSquaresAffectedBy(square)
             solvedSquaresQueue.extend(squaresSolvedByKnockout)
             printing.PrintSudoku(self.sudoku)
-            if len(solvedSquaresQueue) == 0:
-                if self.sudoku.IsSolved():
-                    return True
-                result = self._FindSquareHavingUniqueValue()
-                if result is not None:
-                    (square, value) = result
-                    square.Set(value)
-                    solvedSquaresQueue = [square]
-                    continue
 
-        return False
+        return self.sudoku.IsSolved()
+
+
+
+        

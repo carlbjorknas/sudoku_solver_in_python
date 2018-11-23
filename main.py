@@ -16,11 +16,21 @@ while True:
     if userValue == "q":
         break
     
-    if userValue == "s":
-        solved = solver.Solver(sudoku).Solve()
+    if userValue == "k":
+        solved = solver.Solver(sudoku).SolveUsingKnockout()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break
+    elif userValue == "u":
+        solved = solver.Solver(sudoku).SolveByFindingUniqueValues()
+        print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
+        if solved:
+            break 
+    elif userValue == "b":
+        solved = solver.Solver(sudoku).SolveUsingBruteForce()
+        print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
+        if solved:
+            break               
     else:    
         # Assume there is a single command or a list of commands separated by ";"
         valuesToSet = [[uv[0], uv[1], uv[2]] for uv in userValue.split(";")]
@@ -30,11 +40,14 @@ while True:
             squareIndex = TranslateFromUserIndices(biqSquareIndex, smallSquareIndex)
             square = sudoku.GetSquare(squareIndex)
             square.Set(int(value))
-        printing.PrintSudoku(sudoku)            
+        printing.PrintSudoku(sudoku)  
+
+    print("q:quit, k:knockout, u:findUnique, b:bruteforce")
 
     # Improvements:
     #
     # When no more certain knockouts can be done, start trying different values out
+    # Write to log file
 
     # Examples:
     #
