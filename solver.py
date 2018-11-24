@@ -32,9 +32,9 @@ class Solver:
         for biqSquareIndex in range(9):
             squares = self.sudoku.GetSquaresInBigSquare(biqSquareIndex)
             for value in {1,2,3,4,5,6,7,8,9}:
-                usolvedSquaresHavingTheValue = [square for square in squares if not square.IsSolved() and value in square.possibleValues]
-                if len(usolvedSquaresHavingTheValue) == 1:
-                    foundSquare = usolvedSquaresHavingTheValue[0]                
+                unsolvedSquaresHavingTheValue = [square for square in squares if not square.IsSolved() and value in square.possibleValues]
+                if len(unsolvedSquaresHavingTheValue) == 1:
+                    foundSquare = unsolvedSquaresHavingTheValue[0]                
                     print(f"Square with has a unique value {value} in its big square. {str(foundSquare)}")
                     return (foundSquare, value)
         return None
@@ -57,7 +57,8 @@ class Solver:
 
     def SolveUsingBruteForce(self):
         square = self._FindSquareToBruteForce()
-        return any((self._BruteForceSolve(square, value) for value in square.possibleValues))
+        results = (self._BruteForceSolve(square, value) for value in square.possibleValues)
+        return next((result for result in results if result[0] == True), [False, -1, Solver.numberGuesses])
             
     def _FindSquareToBruteForce(self):
         bestSquare = None
@@ -74,12 +75,14 @@ class Solver:
         newSudoku = self.sudoku.Clone()
         newSquare = newSudoku.GetSquare(square.index)
         newSquare.Set(value)
-        solver = Solver(newSudoku, self.nrSquaresSolvedByBruteForce+1)
+        solver = Solver(newSudoku, self.nrSquaresSolvedByBruteForce + 1)
         try:
-            return solver._SolveUsingKnockout([newSquare]) or solver.SolveByFindingUniqueValues() or solver.SolveUsingBruteForce()
+            if solver._SolveUsingKnockout([newSquare]) or solver.SolveByFindingUniqueValues():
+                return [True, self.nrSquaresSolvedByBruteForce, Solver.numberGuesses]            
+            return solver.SolveUsingBruteForce()
         except:
             print(f"Failed bruteforcing with value {value}. {str(square)}")
-            return False
+            return [False, self.nrSquaresSolvedByBruteForce, Solver.numberGuesses]
 
     def _SolveUsingKnockout(self, solvedSquaresQueue):         
         while len(solvedSquaresQueue) > 0:            

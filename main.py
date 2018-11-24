@@ -30,14 +30,15 @@ while True:
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break
-    elif userValue == "u":
+    elif userValue == "f":
         solved = theSolver.SolveByFindingUniqueValues()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break 
     elif userValue == "b":
-        solved = theSolver.SolveUsingBruteForce()
-        print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}. Used {solver.Solver.numberGuesses} guesses.")
+        (solved, nrSquaresSolvedWithBruteForce, totalNumberGuesses) = theSolver.SolveUsingBruteForce()
+        print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}.") 
+        print(f"{nrSquaresSolvedWithBruteForce} squares solved using brute force, with a total of {totalNumberGuesses} guesses.")
         if solved:
             break               
     else:    
@@ -51,7 +52,7 @@ while True:
             square.Set(int(value))
         printing.PrintSudoku(sudoku)  
 
-    print("q:quit, k:knockout, u:findUnique, b:bruteforce")
+    print("q:quit, k:knockout, f:findUnique, b:bruteForce")
 
     # Improvements:
     #
