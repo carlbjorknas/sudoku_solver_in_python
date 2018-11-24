@@ -8,8 +8,16 @@ def TranslateFromUserIndices(bigSquareIndex, smallSquareIndex):
     return row * 9 + col
 
 sudoku = models.Sudoku()
-solver = solver.Solver(sudoku)
+theSolver = solver.Solver(sudoku)
 printing.PrintSudoku(sudoku)
+print("The board above shows the possible values for each square.")
+print("Add the known values. Use the the format [big square index][small square index][value].")
+print("Top left square has index 1, top middle square has index 2, top right square has index 3 and so on.")
+print("To set the value 9 in the center of the top left big square, write 159 and press enter.")
+print("Multiple values can be set at once by using ';' as separator, like this 159;225;345")
+print("")
+print("When all values are set, you have to begin the solving by using the knockout method.")
+print("Then you can follow that up with any of the other two.")
 
 while True:
     userValue = input()
@@ -18,18 +26,18 @@ while True:
         break
     
     if userValue == "k":
-        solved = solver.SolveUsingKnockout()
+        solved = theSolver.SolveUsingKnockout()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break
     elif userValue == "u":
-        solved = solver.SolveByFindingUniqueValues()
+        solved = theSolver.SolveByFindingUniqueValues()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break 
     elif userValue == "b":
-        solved = solver.SolveUsingBruteForce()
-        print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
+        solved = theSolver.SolveUsingBruteForce()
+        print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}. Used {solver.Solver.numberGuesses} guesses.")
         if solved:
             break               
     else:    
@@ -48,7 +56,6 @@ while True:
     # Improvements:
     #
     # Write to log file
-    # Maintain possibleValues sort order when cloning the sudoku.
 
     # Examples:
     #

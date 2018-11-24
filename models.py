@@ -1,23 +1,23 @@
 class Square:
     def __init__(self, index):
-        self.possibleValues = {1,2,3,4,5,6,7,8,9}
+        self.possibleValues = [1,2,3,4,5,6,7,8,9]
         self.index = index
 
     def Set(self, value):
         if self.IsSolved() and self.Value() != value:
             raise Exception("Changing a solved square's value to another value!")
-        self.possibleValues = {value}
+        self.possibleValues = [value]
 
     def Remove(self, value):
-        self.possibleValues.discard(value)
-        if len(self.possibleValues) == 0:
-            raise Exception("Knocked out every value!")
+        if value in self.possibleValues:
+            self.possibleValues.remove(value)
+            if len(self.possibleValues) == 0:
+                raise Exception("Knocked out every value!")
 
     def Value(self):
         if not self.IsSolved():
             raise Exception("Cannot get the value if the square isn't solved.")
-        # possibleValues is a set and cannot be indexed
-        return next(iter(self.possibleValues))
+        return self.possibleValues[0]
     
     def IsSolved(self):
         return len(self.possibleValues) == 1
@@ -48,7 +48,7 @@ class Sudoku:
         newSudoku.squares = []
         for square in self.squares:
             newSquare = Square(square.index)
-            newSquare.possibleValues = set(square.possibleValues)
+            newSquare.possibleValues = list(square.possibleValues)
             newSudoku.squares.append(newSquare)
         return newSudoku
 
