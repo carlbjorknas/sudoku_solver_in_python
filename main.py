@@ -9,8 +9,8 @@ def TranslateFromUserIndices(bigSquareIndex, smallSquareIndex):
 
 sudoku = models.Sudoku()
 theSolver = solver.Solver(sudoku)
-printing.PrintSudoku(sudoku)
-print("The board above shows the possible values for each square.")
+printing.PrintSudoku(sudoku, True)
+print("The printout above is the board. It will later show the remaining possible values for each square.")
 print("Add the known values. Use the the format [big square index][small square index][value].")
 print("Top left square has index 1, top middle square has index 2, top right square has index 3 and so on.")
 print("To set the value 9 in the center of the top left big square, write 159 and press enter.")
@@ -19,6 +19,7 @@ print("")
 print("When all values are set, you have to begin the solving by using the knockout method.")
 print("Then you can follow that up with any of the other two.")
 
+knockoutRunAfterNewlySetValue = False
 while True:
     userValue = input()
 
@@ -26,22 +27,28 @@ while True:
         break
     
     if userValue == "k":
+        knockoutRunAfterNewlySetValue = True
         solved = theSolver.SolveUsingKnockout()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break
     elif userValue == "f":
+        if not knockoutRunAfterNewlySetValue:
+            print("Run knockout first")
         solved = theSolver.SolveByFindingUniqueValues()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break 
     elif userValue == "b":
+        if not knockoutRunAfterNewlySetValue:
+            print("Run knockout first")        
         (solved, nrSquaresSolvedWithBruteForce, totalNumberGuesses) = theSolver.SolveUsingBruteForce()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}.") 
         print(f"{nrSquaresSolvedWithBruteForce} squares solved using brute force, with a total of {totalNumberGuesses} guesses.")
         if solved:
             break               
-    else:    
+    else: 
+        knockoutRunAfterNewlySetValue = False   
         # Assume there is a single command or a list of commands separated by ";"
         valuesToSet = [[uv[0], uv[1], uv[2]] for uv in userValue.split(";")]
 
@@ -50,9 +57,9 @@ while True:
             squareIndex = TranslateFromUserIndices(biqSquareIndex, smallSquareIndex)
             square = sudoku.GetSquare(squareIndex)
             square.Set(int(value))
-        printing.PrintSudoku(sudoku)  
+        printing.PrintSudoku(sudoku, True)
 
-    print("q:quit, k:knockout, f:findUnique, b:bruteForce")
+    print(f"Add more known values or choose a command. q:quit, k:knockout{', f:findUnique, b:bruteForce' if knockoutRunAfterNewlySetValue else ''}")
 
     # Improvements:
     #
