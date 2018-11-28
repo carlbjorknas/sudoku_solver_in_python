@@ -39,9 +39,7 @@ while True:
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}")
         if solved:
             break 
-    elif userValue == "b":
-        if not knockoutRunAfterNewlySetValue:
-            print("Run knockout first")        
+    elif userValue == "b":      
         (solved, nrSquaresSolvedWithBruteForce, totalNumberGuesses) = theSolver.SolveUsingBruteForce()
         print(f"This sudoku is {'solved!:D' if solved else 'not solved... :_('}.") 
         print(f"{nrSquaresSolvedWithBruteForce} squares solved using brute force, with a total of {totalNumberGuesses} guesses.")
@@ -59,7 +57,7 @@ while True:
             square.Set(int(value))
         printing.PrintSudoku(sudoku, True)
 
-    print(f"Add more known values or choose a command. q:quit, k:knockout{', f:findUnique, b:bruteForce' if knockoutRunAfterNewlySetValue else ''}")
+    print(f"Add more known values or choose a command. q:quit, k:knockout{', f:findUnique' if knockoutRunAfterNewlySetValue else ''}, b:bruteForce")
 
     # Improvements:
     #

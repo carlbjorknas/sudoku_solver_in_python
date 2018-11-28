@@ -1,3 +1,9 @@
+class SolvedSquareValueChangeException(Exception):
+    pass
+
+class SquareHasBecomeEmptyException(Exception):
+    pass
+
 class Square:
     def __init__(self, index):
         self.possibleValues = [1,2,3,4,5,6,7,8,9]
@@ -5,14 +11,14 @@ class Square:
 
     def Set(self, value):
         if self.IsSolved() and self.Value() != value:
-            raise Exception("Changing a solved square's value to another value!")
+            raise SolvedSquareValueChangeException()
         self.possibleValues = [value]
 
     def Remove(self, value):
         if value in self.possibleValues:
             self.possibleValues.remove(value)
             if len(self.possibleValues) == 0:
-                raise Exception("Knocked out every value!")
+                raise SquareHasBecomeEmptyException
 
     def Value(self):
         if not self.IsSolved():

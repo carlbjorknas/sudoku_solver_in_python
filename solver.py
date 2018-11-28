@@ -1,4 +1,4 @@
-import printing
+import printing, models
 
 class Solver:
     numberGuesses = 0
@@ -77,10 +77,10 @@ class Solver:
         newSquare.Set(value)
         solver = Solver(newSudoku, self.nrSquaresSolvedByBruteForce + 1)
         try:
-            if solver._SolveUsingKnockout([newSquare]) or solver.SolveByFindingUniqueValues():
+            if solver._SolveUsingKnockout([newSquare]):
                 return [True, self.nrSquaresSolvedByBruteForce, Solver.numberGuesses]            
             return solver.SolveUsingBruteForce()
-        except:
+        except (models.SolvedSquareValueChangeException, models.SquareHasBecomeEmptyException):
             print(f"Failed bruteforcing with value {value}. {str(square)}")
             return [False, self.nrSquaresSolvedByBruteForce, Solver.numberGuesses]
 
